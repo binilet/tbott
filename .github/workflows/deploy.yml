@@ -1,0 +1,27 @@
+name: Deploy Hagere Telegram Bot
+
+on:
+  push:
+    branches:
+      - main  # run when pushing to main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Connect & Deploy to VPS
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HAGERE_VPS_HOST_TELE_CLOUD }}
+          username: ${{ secrets.HAGERE_VPS_USER_TELE_CLOUD }}
+          key: ${{ secrets.HAGERE_VPS_SSH_KEY_TELE_CLOUD }}
+          script: |
+            cd /hagere-bot/tbott   # <-- path where you cloned your bot
+            git pull origin main
+            npm install --production
+            pm2 restart telegramBot || pm2 start index.js --name telegramBot
+            pm2 save

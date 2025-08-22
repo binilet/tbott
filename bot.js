@@ -18,12 +18,12 @@ const setupBotMenu = async () => {
   try {
     // Set bot commands for the menu button
     await bot.setMyCommands([
-      { command: "start", description: "🚀 Start & Launch Game" },
-      { command: "play", description: "🎮 Launch Hagere Bingo" },
-      { command: "rules", description: "📋 Game Rules & Instructions" },
+      { command: "start", description: "🚀 እንኳን ደህና መጡ" },
+      { command: "play", description: "🎮 ወደ ጌም ይሂዱ" },
+      { command: "rules", description: "📋 ህግጋት" },
       //{ command: "stats", description: "📊 Your Game Statistics" },
       { command: "support", description: "💬 Contact Support" },
-      { command: "about", description: "ℹ️ About Hagere Bingo" }
+      { command: "about", description: "ℹ️ ስለ እኛ" }
     ]);
 
     // Set bot description
