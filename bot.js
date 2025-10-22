@@ -218,7 +218,7 @@ bot.onText(/\/stats/, (msg) => {
 });
 
 // 5. Support Command
-bot.onText(/\/support/, (msg) => {
+/*bot.onText(/\/support/, (msg) => {
   const chatId = msg.chat.id;
   
   const supportMessage = `💬 *HAGERE BINGO SUPPORT*\n\n` +
@@ -236,7 +236,7 @@ bot.onText(/\/support/, (msg) => {
   reply_markup: {
     inline_keyboard: [
       [
-        { text: "💬 Join Support Group", url: "https://t.me/binilet" }
+        { text: "💬 Join Support Group", url: "https://t.me/HagereGamesOnline" }
       ],
       [
         { text: "🔙 Back to Menu", callback_data: "main_menu" }
@@ -244,7 +244,7 @@ bot.onText(/\/support/, (msg) => {
     ]
   }
 });
-});
+});*/
 
 // 6. About Command
 bot.onText(/\/about/, (msg) => {
@@ -314,12 +314,12 @@ bot.on('callback_query', async (callbackQuery) => {
       };
 
       await bot.editMessageText(
-        `🎮 *Choose your action:*\n\n` +
-        `• **Launch Game** - Start playing immediately\n` +
-        `• **How to Play** - Learn the rules\n` +
-        `• **My Stats** - View your progress\n` +
-        `• **Bonuses** - Check available rewards\n` +
-        `• **Support** - Get help when needed`,
+        `🎮 *ምን ማረግ ይፈልጋሉ:*\n\n` +
+        `• **ወደ ጌም**\n` +
+        `• **መመሪያ**\n` +
+        // `• **My Stats** - View your progress\n` +
+        `• **ቦነስ**\n` +
+        `• **ድጋፍ**`,
         {
           chat_id: chatId,
           message_id: messageId,
@@ -338,7 +338,30 @@ bot.on('callback_query', async (callbackQuery) => {
       break;
 
     case 'support':
-      bot.sendMessage(chatId, '/support');
+      ///bot.sendMessage(chatId, '/support');
+       const supportMessage = `💬 *HAGERE BINGO SUPPORT*\n\n` +
+    `We're here to help! Choose how you'd like to get support:\n\n` +
+    `📧 **ቴሌግራም:** https://t.me/HagereGamesOnline \n` +
+    `⏰ **Response Time:** Within 24 hours\n` +
+    `**ጥያቄዎች:**\n` +
+    `• ክፍያን በተመለከተ\n` +
+    `• ጌም ላይ ሚገኙ ችግሮች ወይም ማስተካከያዎች\n` +
+    `• ከ አካውንት ጋር በተያያዘ\n` +
+    `• ማንኛውም ሃሳብ እና አስተያየት`;
+
+  bot.sendMessage(chatId, supportMessage, {
+  parse_mode: "Markdown",
+  reply_markup: {
+    inline_keyboard: [
+      [
+        { text: "💬 Join Support Group", url: "https://t.me/HagereGamesOnline" }
+      ],
+      [
+        { text: "🔙 ተመለስ", callback_data: "main_menu" }
+      ]
+    ]
+  }
+});
       break;
 
     case 'bonuses':
@@ -358,7 +381,7 @@ bot.on('callback_query', async (callbackQuery) => {
                 { text: "🚀 Claim Bonuses", web_app: { url: WEBAPP_URL } }
               ],*/
               [
-                { text: "🔙 Back to Menu", callback_data: "main_menu" }
+                { text: "🔙 ተመለስ", callback_data: "main_menu" }
               ]
             ]
           }
