@@ -72,11 +72,11 @@ bot.onText(/\/start/, async (msg) => {
 
   await bot.sendMessage(
     chatId,
-    `👋 Welcome ${userName}! Click below to begin.`,
+    "🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀", // Minimal message (just a dot)
     {
       reply_markup: {
         inline_keyboard: [
-          [{ text: "🚀 ጀምር", callback_data: "start" }]
+          [{ text: `👋 እንኳን ደህና መጡ ${userName}! ለመጀመር ይሄን ይጫኑ 🚀`, callback_data: "start" }]
         ]
       }
     }
@@ -250,7 +250,8 @@ bot.on('callback_query', async (callbackQuery) => {
   const data = callbackQuery.data;
   const chatId = message.chat.id;
   const messageId = message.message_id;
-  const userName = message.from.first_name || "Player";
+  const userName = callbackQuery.from.first_name || "Player";
+
 
   // Answer the callback query to remove loading state
   await bot.answerCallbackQuery(callbackQuery.id);
