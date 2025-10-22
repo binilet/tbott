@@ -66,59 +66,9 @@ async function sendLogo(bot, chatId, userName) {
 // --- Enhanced Command Handlers ---
 
 // 1. Professional Start Command with Logo and Mini App
-bot.onText(/\/start/, async (msg) => {
-  const chatId = msg.chat.id;
-  const userName = msg.from.first_name || "Player";
-
-  // Try to send logo first
-  const logoSent = await sendLogo(bot, chatId, userName);
+// bot.onText(/\/start/, async (msg) => {
   
-  // If logo wasn't sent, send text-based welcome
-  if (!logoSent) {
-    const logoMessage = `
-╔══════════════════════════════════╗
-║          🎯 ሃገሬ ቢንጎ          
-╚══════════════════════════════════╝
-
-🌟 *እንኳን በደህና መጡ ${userName}!*
-
-🎮 *ለመጫወት ተዘጋጅተዋል?*
-💰 *በሃገር ውስጥ ካሉ ሌሎች ተጫዋቾች ጋር እየተፎካከሩ አሪፍ አሪፍ ሽልማቶችን ያሸንፉ!*`;
-
-    await bot.sendMessage(chatId, logoMessage, {
-      parse_mode: "Markdown"
-    });
-  }
-
-  // Continue with your menu buttons...
-  const mainMenuKeyboard = {
-        inline_keyboard: [
-          [
-            { 
-              text: "🚀 ወደ ጨዋታ ይሂዱ", 
-              web_app: { url: WEBAPP_URL } 
-            }
-          ],
-          [
-            { text: "📋 የጨዋታ መመሪያ", callback_data: "rules" },
-            //{ text: "📊 My Stats", callback_data: "stats" }
-          ],
-          [
-            { text: "🎁 ቦነሶች", callback_data: "bonuses" },
-            { text: "💬 ድጋፍ", callback_data: "support" }
-          ]
-        ]
-      };
-
-  await bot.sendMessage(
-    chatId,
-    `🎮 ምን ማድረግ ይፈልጋሉ ?                                          .`,
-    {
-      parse_mode: "Markdown",
-      reply_markup: mainMenuKeyboard
-    }
-  );
-});
+// });
 
 // 2. Direct Play Command
 bot.onText(/\/play/, async (msg) => {
@@ -155,7 +105,7 @@ bot.onText(/\/play/, async (msg) => {
 });
 
 // 3. Rules Command
-bot.onText(/\/rules/, (msg) => {
+/*bot.onText(/\/rules/, (msg) => {
   const chatId = msg.chat.id;
   
   const rulesMessage = `📋 *HAGERE BINGO - የጨዋታ መመሪያ*\n\n` +
@@ -186,7 +136,7 @@ bot.onText(/\/rules/, (msg) => {
       ]
     }
   });
-});
+});*/
 
 // 4. Stats Command
 bot.onText(/\/stats/, (msg) => {
@@ -287,11 +237,67 @@ bot.on('callback_query', async (callbackQuery) => {
   const data = callbackQuery.data;
   const chatId = message.chat.id;
   const messageId = message.message_id;
+  const userName = message.from.first_name || "Player";
 
   // Answer the callback query to remove loading state
   await bot.answerCallbackQuery(callbackQuery.id);
 
   switch (data) {
+
+    case 'start':
+      //const chatId = msg.chat.id;
+  
+
+  // Try to send logo first
+  const logoSent = await sendLogo(bot, chatId, userName);
+  
+  // If logo wasn't sent, send text-based welcome
+  if (!logoSent) {
+    const logoMessage = `
+╔══════════════════════════════════╗
+║          🎯 ሃገሬ ቢንጎ          
+╚══════════════════════════════════╝
+
+🌟 *እንኳን በደህና መጡ ${userName}!*
+
+🎮 *ለመጫወት ተዘጋጅተዋል?*
+💰 *በሃገር ውስጥ ካሉ ሌሎች ተጫዋቾች ጋር እየተፎካከሩ አሪፍ አሪፍ ሽልማቶችን ያሸንፉ!*`;
+
+    await bot.sendMessage(chatId, logoMessage, {
+      parse_mode: "Markdown"
+    });
+  }
+
+  // Continue with your menu buttons...
+  
+
+  await bot.sendMessage(
+    chatId,
+    `🎮 ምን ማድረግ ይፈልጋሉ ${userName}?                                          .`,
+    {
+      parse_mode: "Markdown",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { 
+              text: "🚀 ወደ ጨዋታ ይሂዱ", 
+              web_app: { url: WEBAPP_URL } 
+            }
+          ],
+          [
+            { text: "📋 የጨዋታ መመሪያ", callback_data: "rules" },
+            //{ text: "📊 My Stats", callback_data: "stats" }
+          ],
+          [
+            { text: "🎁 ቦነሶች", callback_data: "bonuses" },
+            { text: "💬 ድጋፍ", callback_data: "support" }
+          ]
+        ]
+      }
+    }
+  );
+      break;
+
     case 'main_menu':
       // Edit message to show main menu
       const mainMenuKeyboard = {
@@ -330,7 +336,36 @@ bot.on('callback_query', async (callbackQuery) => {
       break;
 
     case 'rules':
-      bot.sendMessage(chatId, '/rules');
+      //bot.sendMessage(chatId, '/rules');
+      //const chatId = msg.chat.id;
+      const rulesMessage = `📋 *HAGERE BINGO - የጨዋታ መመሪያ*\n\n` +
+        `🎯 **የጨዋታው አላማ:**\n የቢንጎ ፓተርኑን ቀድሞ መዝጋት!\n\n` +
+        `🎮 **ለመጫወት:**\n` +
+        `1️⃣ መጫወት የሚፈልጉትን የጌም አይነት ይምረጡ\n` +
+        `2️⃣ ካርቴላ ይግዙ\n` +
+        `3️⃣ ጨዋታው እስኪጀመር ይጠብቁ\n` +
+        `4️⃣ በየ 3-4 ሰከንድ የሚጠሩት ቁጥሮች እያዩ፣ ካርቴላ ላይ ምልክት ያርጉ\n` +
+        `5️⃣ ሲስተሙ በራሱ(automatically) ውጤቶትን ቼክ በማድረግ አሸናፊውን ያሳውቃል!\n\n` +
+        `6 የተጫወቱትን/የገዙትን የጌም ታሪክ (history) ላይ በመግባት ውጤቶን ማየት ይችላሉ!\n\n` +
+        `🏆 **የተወኑ ማሸነፊያ ፓተርኖች:**\n` +
+        `• ሙሉ ዝግ እና ግማሽ ዝግ\n` +
+        `• 1 እና ከ 1 በላይ መስመሮች (አግድም, ቁመት, ሰያፍ)\n` +
+        `• ከስተም ፓተርኖች\n\n` +
+        `💰 **ሽልማቶች:**\n ባሉት ተጫዋቾች ላይ የተመሰረተ እና ሲስተሙ በሚያዘጋጀው ትልቅ ደራሽ`;
+
+      bot.sendMessage(chatId, rulesMessage, {
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: "🚀 አሁን ይጫውቱ", web_app: { url: WEBAPP_URL } }
+            ],
+            [
+              { text: "🔙 ወደ ሜኑ ይመለሱ", callback_data: "main_menu" }
+            ]
+          ]
+        }
+      });
       break;
 
     case 'stats':
@@ -338,30 +373,30 @@ bot.on('callback_query', async (callbackQuery) => {
       break;
 
     case 'support':
-      ///bot.sendMessage(chatId, '/support');
-       const supportMessage = `💬 *HAGERE BINGO SUPPORT*\n\n` +
-    `We're here to help! Choose how you'd like to get support:\n\n` +
-    `📧 **ቴሌግራም:** https://t.me/HagereGamesOnline \n` +
-    `⏰ **Response Time:** Within 24 hours\n` +
-    `**ጥያቄዎች:**\n` +
-    `• ክፍያን በተመለከተ\n` +
-    `• ጌም ላይ ሚገኙ ችግሮች ወይም ማስተካከያዎች\n` +
-    `• ከ አካውንት ጋር በተያያዘ\n` +
-    `• ማንኛውም ሃሳብ እና አስተያየት`;
+        ///bot.sendMessage(chatId, '/support');
+        const supportMessage = `💬 *HAGERE BINGO SUPPORT*\n\n` +
+          `ልንረደዎት ዝግጁ ነን ${userName}:\n\n` +
+          `📧 **ቴሌግራም:** https://t.me/HagereGamesOnline \n` +
+          `⏰ **Response Time:** Within 24 hours\n` +
+          `**ጥያቄዎች:**\n` +
+          `• ክፍያን በተመለከተ\n` +
+          `• ጌም ላይ ሚገኙ ችግሮች ወይም ማስተካከያዎች\n` +
+          `• ከ አካውንት ጋር በተያያዘ\n` +
+          `• ማንኛውም ሃሳብ እና አስተያየት`;
 
-  bot.sendMessage(chatId, supportMessage, {
-  parse_mode: "Markdown",
-  reply_markup: {
-    inline_keyboard: [
-      [
-        { text: "💬 Join Support Group", url: "https://t.me/HagereGamesOnline" }
-      ],
-      [
-        { text: "🔙 ተመለስ", callback_data: "main_menu" }
-      ]
-    ]
-  }
-});
+        bot.sendMessage(chatId, supportMessage, {
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [
+              { text: "💬 Join Support Group", url: "https://t.me/HagereGamesOnline" }
+            ],
+            [
+              { text: "🔙 ተመለስ", callback_data: "main_menu" }
+            ]
+          ]
+        }
+      });
       break;
 
     case 'bonuses':
