@@ -28,12 +28,11 @@ const setupBotMenu = async () => {
 
     // Set bot description
     await bot.setMyDescription(
-      "🎯 Welcome to Hagere Bingo! The most exciting online bingo experience. " +
-      "Play live games, win real prizes, and enjoy the thrill of bingo with players worldwide!"
+      "🎯 እንኳን ወደ ሃገሬ ቢንጎ ጌምስ በሰላም መጡ። አጓጊ ጨዋታዎችን እየተጫወቱ ያሸንፉ!"
     );
 
     // Set bot short description
-    await bot.setMyShortDescription("🎮 Professional Online Bingo Game");
+    await bot.setMyShortDescription("🎮 ሃገሬ ጌምስ");
 
     console.log("✅ Bot menu and descriptions set successfully!");
   } catch (error) {
@@ -83,10 +82,8 @@ bot.onText(/\/start/, async (msg) => {
 
 🌟 *እንኳን በደህና መጡ ${userName}!*
 
-🎮 *Ready for the most exciting bingo experience?*
-💰 *Win real prizes and compete with players worldwide!*
-
-Let's get you started on your winning journey!`;
+🎮 *ለመጫወት ተዘጋጅተዋል?*
+💰 *በሃገር ውስጥ ካሉ ሌሎች ተጫዋቾች ጋር እየተፎካከሩ አሪፍ አሪፍ ሽልማቶችን ያሸንፉ!*`;
 
     await bot.sendMessage(chatId, logoMessage, {
       parse_mode: "Markdown"
@@ -98,17 +95,17 @@ Let's get you started on your winning journey!`;
         inline_keyboard: [
           [
             { 
-              text: "🚀 Launch Game", 
+              text: "🚀 ወደ ጨዋታ ይሂዱ", 
               web_app: { url: WEBAPP_URL } 
             }
           ],
           [
-            { text: "📋 How to Play", callback_data: "rules" },
+            { text: "📋 የጨዋታ መመሪያ", callback_data: "rules" },
             //{ text: "📊 My Stats", callback_data: "stats" }
           ],
           [
-            { text: "🎁 Bonuses", callback_data: "bonuses" },
-            { text: "💬 Support", callback_data: "support" }
+            { text: "🎁 ቦነሶች", callback_data: "bonuses" },
+            { text: "💬 ድጋፍ", callback_data: "support" }
           ]
         ]
       };
@@ -130,8 +127,8 @@ bot.onText(/\/play/, async (msg) => {
   try {
     await bot.sendMessage(
       chatId,
-      `🎯 *Ready to Play Hagere Bingo?*\n\n` +
-      `🎮 Click the button below to launch the game instantly!\n\n` +
+      `🎯 *ለመጫወት ተዘጋጁ??*\n\n` +
+      `🎮 በተኑን ይጫኑ እና ወደ ጌም ይወስዶታል!\n\n` +
       `💡 *Pro Tip:* Make sure you have a stable internet connection for the best gaming experience.`,
       {
         parse_mode: "Markdown",
@@ -139,13 +136,13 @@ bot.onText(/\/play/, async (msg) => {
           inline_keyboard: [
             [
               { 
-                text: "🚀 Launch Hagere Bingo", 
+                text: "🚀 ወደ ሃገሬ ጌምስ ሂድ", 
                 web_app: { url: WEBAPP_URL } 
               }
             ],
             [
-              { text: "📋 Quick Rules", callback_data: "quick_rules" },
-              { text: "🔙 Back to Menu", callback_data: "main_menu" }
+              // { text: "📋 Quick Rules", callback_data: "quick_rules" },
+              { text: "🔙 ተመለስ", callback_data: "main_menu" }
             ]
           ]
         }
@@ -161,29 +158,30 @@ bot.onText(/\/play/, async (msg) => {
 bot.onText(/\/rules/, (msg) => {
   const chatId = msg.chat.id;
   
-  const rulesMessage = `📋 *HAGERE BINGO - GAME RULES*\n\n` +
-    `🎯 **Objective:**\nBe the first to complete a winning pattern on your bingo card!\n\n` +
-    `🎮 **How to Play:**\n` +
-    `1️⃣ Purchase your bingo cards\n` +
-    `2️⃣ Wait for the game to start\n` +
-    `3️⃣ Numbers will be called automatically\n` +
-    `4️⃣ Mark matching numbers on your card\n` +
-    `5️⃣ Shout "BINGO" when you complete a pattern!\n\n` +
-    `🏆 **Winning Patterns:**\n` +
-    `• Full House (all numbers)\n` +
-    `• Lines (horizontal, vertical, diagonal)\n` +
-    `• Corners & Special patterns\n\n` +
-    `💰 **Prizes:**\nWin real money based on the game type and number of players!`;
+  const rulesMessage = `📋 *HAGERE BINGO - የጨዋታ መመሪያ*\n\n` +
+    `🎯 **የጨዋታው አላማ:**\n የቢንጎ ፓተርኑን ቀድሞ መዝጋት!\n\n` +
+    `🎮 **ለመጫወት:**\n` +
+    `1️⃣ መጫወት የሚፈልጉትን የጌም አይነት ይምረጡ\n` +
+    `2️⃣ ካርቴላ ይግዙ\n` +
+    `3️⃣ ጨዋታው እስኪጀመር ይጠብቁ\n` +
+    `4️⃣ በየ 3-4 ሰከንድ የሚጠሩት ቁጥሮች እያዩ፣ ካርቴላ ላይ ምልክት ያርጉ\n` +
+    `5️⃣ ሲስተሙ በራሱ(automatically) ውጤቶትን ቼክ በማድረግ አሸናፊውን ያሳውቃል!\n\n` +
+    `6 የተጫወቱትን/የገዙትን የጌም ታሪክ (history) ላይ በመግባት ውጤቶን ማየት ይችላሉ!\n\n` +
+    `🏆 **የተወኑ ማሸነፊያ ፓተርኖች:**\n` +
+    `• ሙሉ ዝግ እና ግማሽ ዝግ\n` +
+    `• 1 እና ከ 1 በላይ መስመሮች (አግድም, ቁመት, ሰያፍ)\n` +
+    `• ከስተም ፓተርኖች\n\n` +
+    `💰 **ሽልማቶች:**\n ባሉት ተጫዋቾች ላይ የተመሰረተ እና ሲስተሙ በሚያዘጋጀው ትልቅ ደራሽ`;
 
   bot.sendMessage(chatId, rulesMessage, {
     parse_mode: "Markdown",
     reply_markup: {
       inline_keyboard: [
         [
-          { text: "🚀 Play Now", web_app: { url: WEBAPP_URL } }
+          { text: "🚀 አሁን ይጫውቱ", web_app: { url: WEBAPP_URL } }
         ],
         [
-          { text: "🔙 Back to Menu", callback_data: "main_menu" }
+          { text: "🔙 ወደ ሜኑ ይመለሱ", callback_data: "main_menu" }
         ]
       ]
     }
@@ -225,14 +223,13 @@ bot.onText(/\/support/, (msg) => {
   
   const supportMessage = `💬 *HAGERE BINGO SUPPORT*\n\n` +
     `We're here to help! Choose how you'd like to get support:\n\n` +
-    `📧 **Email:** support@hagere-online.com\n` +
+    `📧 **ቴሌግራም:** https://t.me/HagereGamesOnline \n` +
     `⏰ **Response Time:** Within 24 hours\n` +
-    `🌍 **Available:** 24/7 Support\n\n` +
-    `**Common Issues:**\n` +
-    `• Payment problems\n` +
-    `• Game technical issues\n` +
-    `• Account questions\n` +
-    `• Prize claims`;
+    `**ጥያቄዎች:**\n` +
+    `• ክፍያን በተመለከተ\n` +
+    `• ጌም ላይ ሚገኙ ችግሮች ወይም ማስተካከያዎች\n` +
+    `• ከ አካውንት ጋር በተያያዘ\n` +
+    `• ማንኛውም ሃሳብ እና አስተያየት`;
 
   bot.sendMessage(chatId, supportMessage, {
   parse_mode: "Markdown",
@@ -274,10 +271,10 @@ bot.onText(/\/about/, (msg) => {
     reply_markup: {
       inline_keyboard: [
         [
-          { text: "🚀 Start Playing", web_app: { url: WEBAPP_URL } }
+          { text: "🚀 ወደ ጨዋታ ይሂዱ", web_app: { url: WEBAPP_URL } }
         ],
         [
-          { text: "🌐 Visit Website", url: WEBAPP_URL }
+          { text: "🌐 ወደ ዌብ ሳይት ይውጡ", url: WEBAPP_URL }
         ]
       ]
     }
@@ -301,17 +298,17 @@ bot.on('callback_query', async (callbackQuery) => {
         inline_keyboard: [
           [
             { 
-              text: "🚀 Launch Game", 
+              text: "🚀 ወደ ጨዋታ ይሂዱ", 
               web_app: { url: WEBAPP_URL } 
             }
           ],
           [
-            { text: "📋 How to Play", callback_data: "rules" },
+            { text: "📋 የጨዋታ መመሪያ", callback_data: "rules" },
             //{ text: "📊 My Stats", callback_data: "stats" }
           ],
           [
-            { text: "🎁 Bonuses", callback_data: "bonuses" },
-            { text: "💬 Support", callback_data: "support" }
+            { text: "🎁 ቦነሶች", callback_data: "bonuses" },
+            { text: "💬 ድጋፍ/Support", callback_data: "support" }
           ]
         ]
       };
@@ -348,18 +345,18 @@ bot.on('callback_query', async (callbackQuery) => {
       await bot.sendMessage(
         chatId,
         `🎁 *AVAILABLE BONUSES*\n\n` +
-        `🆕 **Welcome Bonus:** 100% match on first deposit\n` +
-        `🎯 **Daily Login:** Free tickets every day\n` +
-        `🏆 **Win Streak:** Bonus multipliers\n` +
-        `👥 **Referral:** Invite friends, earn rewards\n\n` +
-        `💡 *Log in daily to maximize your bonuses!*`,
+        `🆕 **እንኳን ደህና መጡ ቦነስ:** የ10 ብር ጌም ክሬዲት\n` +
+        `🎯 **1 መስመር ከ10 ጥሪ በታች:** 100 ብር\n` +
+        `🎯 **2 መስመር ከ18 ጥሪ በታች:** 100 ብር\n` +
+        `🎯 **ግማሽ ዝግ ከ28 ጥሪ በታች:** 100 ብር\n` +
+        `🎯 **ሙሉ ዝግ ከ52 ጥሪ በታች:** 100 ብር\n` +
         {
           parse_mode: "Markdown",
           reply_markup: {
             inline_keyboard: [
-              [
+              /*[
                 { text: "🚀 Claim Bonuses", web_app: { url: WEBAPP_URL } }
-              ],
+              ],*/
               [
                 { text: "🔙 Back to Menu", callback_data: "main_menu" }
               ]
