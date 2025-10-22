@@ -66,9 +66,22 @@ async function sendLogo(bot, chatId, userName) {
 // --- Enhanced Command Handlers ---
 
 // 1. Professional Start Command with Logo and Mini App
-// bot.onText(/\/start/, async (msg) => {
-  
-// });
+bot.onText(/\/start/, async (msg) => {
+  const chatId = msg.chat.id;
+  const userName = msg.from.first_name || "Player";
+
+  await bot.sendMessage(
+    chatId,
+    `👋 Welcome ${userName}! Click below to begin.`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: "🚀 ጀምር", callback_data: "start" }]
+        ]
+      }
+    }
+  );
+});
 
 // 2. Direct Play Command
 bot.onText(/\/play/, async (msg) => {
@@ -248,54 +261,54 @@ bot.on('callback_query', async (callbackQuery) => {
       //const chatId = msg.chat.id;
   
 
-  // Try to send logo first
-  const logoSent = await sendLogo(bot, chatId, userName);
-  
-  // If logo wasn't sent, send text-based welcome
-  if (!logoSent) {
-    const logoMessage = `
-╔══════════════════════════════════╗
-║          🎯 ሃገሬ ቢንጎ          
-╚══════════════════════════════════╝
+        // Try to send logo first
+        const logoSent = await sendLogo(bot, chatId, userName);
+        
+        // If logo wasn't sent, send text-based welcome
+        if (!logoSent) {
+          const logoMessage = `
+      ╔══════════════════════════════════╗
+      ║          🎯 ሃገሬ ቢንጎ          
+      ╚══════════════════════════════════╝
 
-🌟 *እንኳን በደህና መጡ ${userName}!*
+      🌟 *እንኳን በደህና መጡ ${userName}!*
 
-🎮 *ለመጫወት ተዘጋጅተዋል?*
-💰 *በሃገር ውስጥ ካሉ ሌሎች ተጫዋቾች ጋር እየተፎካከሩ አሪፍ አሪፍ ሽልማቶችን ያሸንፉ!*`;
+      🎮 *ለመጫወት ተዘጋጅተዋል?*
+      💰 *በሃገር ውስጥ ካሉ ሌሎች ተጫዋቾች ጋር እየተፎካከሩ አሪፍ አሪፍ ሽልማቶችን ያሸንፉ!*`;
 
-    await bot.sendMessage(chatId, logoMessage, {
-      parse_mode: "Markdown"
-    });
-  }
+          await bot.sendMessage(chatId, logoMessage, {
+            parse_mode: "Markdown"
+          });
+        }
 
-  // Continue with your menu buttons...
-  
+        // Continue with your menu buttons...
+        
 
-  await bot.sendMessage(
-    chatId,
-    `🎮 ምን ማድረግ ይፈልጋሉ ${userName}?                                          .`,
-    {
-      parse_mode: "Markdown",
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { 
-              text: "🚀 ወደ ጨዋታ ይሂዱ", 
-              web_app: { url: WEBAPP_URL } 
+        await bot.sendMessage(
+          chatId,
+          `🎮 ምን ማድረግ ይፈልጋሉ ${userName}?                                          .`,
+          {
+            parse_mode: "Markdown",
+            reply_markup: {
+              inline_keyboard: [
+                [
+                  { 
+                    text: "🚀 ወደ ጨዋታ ይሂዱ", 
+                    web_app: { url: WEBAPP_URL } 
+                  }
+                ],
+                [
+                  { text: "📋 የጨዋታ መመሪያ", callback_data: "rules" },
+                  //{ text: "📊 My Stats", callback_data: "stats" }
+                ],
+                [
+                  { text: "🎁 ቦነሶች", callback_data: "bonuses" },
+                  { text: "💬 ድጋፍ", callback_data: "support" }
+                ]
+              ]
             }
-          ],
-          [
-            { text: "📋 የጨዋታ መመሪያ", callback_data: "rules" },
-            //{ text: "📊 My Stats", callback_data: "stats" }
-          ],
-          [
-            { text: "🎁 ቦነሶች", callback_data: "bonuses" },
-            { text: "💬 ድጋፍ", callback_data: "support" }
-          ]
-        ]
-      }
-    }
-  );
+          }
+        );
       break;
 
     case 'main_menu':
