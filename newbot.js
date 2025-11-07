@@ -3,119 +3,17 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const express = require('express');
-const multer = require('multer');
-const cors = require('cors');
-const crypto = require('crypto');
-
 // 🔗 Your URLs and Local Assets
 const WEBAPP_URL = "https://hagere-online.com";
-const ADMIN_PANEL_URL = "https://hagere-online.com/telegram"; // Your admin panel URL
+const ADMIN_PANEL_URL = "https://hagere-online.com/admin"; // Your admin panel URL
 const LOCAL_LOGO_PNG = path.join(__dirname, 'assets', 'logo.png');
 const USERS_FILE = path.join(__dirname, 'data', 'users.json');
-const BROADCAST_FILE = path.join(__dirname, "broadcasts.json");
 
 // Bot token and admin IDs from environment variables
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_IDS = process.env.ADMIN_IDS ? process.env.ADMIN_IDS.split(',').map(id => parseInt(id.trim())) : [];
+
 const bot = new TelegramBot(token, { polling: true });
-
-const app = express();
-app.use(cors());//accept requests from my webapp_url only
-app.use(express.json());
-
-
-//configure multer for image uploads
-const storage = multer.diskStorage({
-  destination: (req,file,cb)=>{
-    const uploadDir = path.join(__dirname,'uploads');
-    if(!fs.existsSync(uploadDir)){
-      fs.mkdirSync(uploadDir,{recursive:true});
-    }
-    cb(null,uploadDir);
-  },
-  filename:(req,file,cb)=>{
-    const uniqueName = crypto.randomBytes(16).toString("hex");
-    const ext = path.extname(file.originalname);
-    cb(null,`${Date.now()}-${uniqueName}${ext}`);
-  }
-});
-
-const fileFilter = (req,file,cb)=>{
-
-  const allowedTypes = ['image/jpeg','image/png','image/gif','image/webp','image/svg+xml', 'image/svg'];
-  if(allowedTypes.includes(file.mimetype)){
-    cb(null,true);
-  }else{
-    cb(new Error("Invalid file type. Only images are allowed."),false);
-  }
-}
-
-const upload = multer({
-  storage:storage,
-  fileFilter:fileFilter,
-  limits:{fileSize:5 * 1024 * 1024} //5MB limit
-});
-
-//serve uploaded images statically
-app.use('/uploads',express.static(path.join(__dirname,'uploads')));
-
-app.post('/api/upload',upload.single('image'),(req,res)=>{
-  try {
-    if(!req.file){
-      return res.status(400).json({error:"No file uploaded."});
-    }
-    const domain = process.env.DOMAIN || 'http://localhost:3333';
-    const imageUrl = `${domain}/uploads/${req.file.filename}`;
-
-    console.log('Image uploaded successfully:', imageUrl);
-
-     res.json({
-      success: true,
-      url: imageUrl,
-      filename: req.file.filename,
-      size: req.file.size,
-      mimetype: req.file.mimetype
-    });
-
-  } catch (error) {
-    console.error('Upload error:', error);
-    res.status(500).json({ 
-      error: 'Upload failed', 
-      message: error.message 
-    });
-  }
-});
-
-// ✨ NEW: Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok✨', 
-    bot: 'running',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// ✨ NEW: Start Express server
-const EXPRESS_PORT = process.env.EXPRESS_PORT || 3000;
-app.listen(EXPRESS_PORT, () => {
-  console.log(`🌐 Express server running on port ${EXPRESS_PORT}`);
-  console.log(`📤 Upload endpoint: http://localhost:${EXPRESS_PORT}/api/upload`);
-  console.log(`🖼️  Images served at: http://localhost:${EXPRESS_PORT}/uploads/`);
-});
-
-function readBroadcasts() {
-  if (!fs.existsSync(BROADCAST_FILE)) return {};
-  const raw = fs.readFileSync(BROADCAST_FILE, "utf-8");
-  return JSON.parse(raw);
-}
-
-// Helper to save a broadcast
-function saveBroadcast(id, data) {
-  const broadcasts = readBroadcasts();
-  broadcasts[id] = data;
-  fs.writeFileSync(BROADCAST_FILE, JSON.stringify(broadcasts, null, 2));
-}
 
 // 📊 User Management System
 const ensureDataDirectory = () => {
@@ -216,21 +114,30 @@ bot.onText(/\/admin/, async (msg) => {
     return;
   }
 
-  bot.sendMessage(chatId, "🔧 Admin Panel", {
-    reply_markup: {
-      inline_keyboard: [
-        [
-          { text: "📰 Broadcast Message", callback_data: "open_broadcast" }
-        ],
-        [
-          { text: "📊 Stats", callback_data: "view_stats" }
-        ],
-        [
-          { text: "❌ Close", callback_data: "close_menu" }
+  await bot.sendMessage(
+    chatId,
+    `👨‍💼 *ADMIN PANEL*\n\n` +
+    `Welcome, Admin! Choose an option:\n\n` +
+    `📢 *Broadcast* - Send messages to all users\n` +
+    `📊 *Stats* - View bot statistics\n` +
+    `🌐 *Web Panel* - Open full admin panel`,
+    {
+      parse_mode: "Markdown",
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: "📢 Create Broadcast", callback_data: "admin_broadcast" }
+          ],
+          [
+            { text: "📊 View Statistics", callback_data: "admin_stats" }
+          ],
+          [
+            { text: "🌐 Open Web Panel", web_app: { url: ADMIN_PANEL_URL } }
+          ]
         ]
-      ]
+      }
     }
-  });
+  );
 });
 
 // Broadcast statistics
@@ -266,29 +173,16 @@ bot.on('web_app_data', async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
 
-  console.log('Web app data received from user:', userId);
-  console.log('Received web app data:', msg.web_app_data.data);
-
-  const _data = msg.web_app_data.data;
-
   if (!isAdmin(userId)) {
     await bot.sendMessage(chatId, "❌ Unauthorized access.");
     return;
   }
+
   try {
-    const data = JSON.parse(_data);
-    console.log('Parsed broadcast data--------------------------:', data);
+    const data = JSON.parse(msg.web_app.data);
+    
     if (data.type === 'broadcast') {
-
-      // generate a unique broadcast ID
-      const broadcastId = crypto.randomUUID();
-
-      // save the broadcast to JSON
-      saveBroadcast(broadcastId, data);
-
-
       // Preview the broadcast
-      console.log('Sending broadcast preview to admin:', userId);
       await bot.sendMessage(
         chatId,
         `📢 *BROADCAST PREVIEW*\n\n` +
@@ -301,7 +195,7 @@ bot.on('web_app_data', async (msg) => {
           reply_markup: {
             inline_keyboard: [
               [
-                { text: "✅ Send Broadcast", callback_data: `confirm_broadcast:${broadcastId}` }
+                { text: "✅ Send Broadcast", callback_data: `confirm_broadcast:${Buffer.from(JSON.stringify(data)).toString('base64')}` }
               ],
               [
                 { text: "❌ Cancel", callback_data: "admin_panel" }
@@ -324,8 +218,6 @@ const executeBroadcast = async (adminChatId, broadcastData) => {
   
   let successCount = 0;
   let failCount = 0;
-
-  console.log(`Starting broadcast to ${userIds.length} users...`);
   
   await bot.sendMessage(adminChatId, `📤 Starting broadcast to ${userIds.length} users...`);
 
@@ -342,7 +234,7 @@ const executeBroadcast = async (adminChatId, broadcastData) => {
             if (btn.url) {
               button.url = btn.url;
             } else if (btn.webApp) {
-              button.web_app = { url: btn.webApp.toLowerCase() };
+              button.web_app = { url: btn.webApp };
             } else if (btn.callback) {
               button.callback_data = btn.callback;
             }
@@ -393,6 +285,8 @@ const executeBroadcast = async (adminChatId, broadcastData) => {
     { parse_mode: "Markdown" }
   );
 };
+
+// --- Enhanced Command Handlers ---
 
 bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
@@ -504,13 +398,13 @@ bot.on('callback_query', async (callbackQuery) => {
   await bot.answerCallbackQuery(callbackQuery.id);
 
   // Admin callbacks
-  if (data === 'open_broadcast') {
+  if (data === 'admin_broadcast') {
     if (!isAdmin(userId)) {
       await bot.sendMessage(chatId, "❌ Unauthorized.");
       return;
     }
 
-    /*await bot.sendMessage(
+    await bot.sendMessage(
       chatId,
       `📢 *CREATE BROADCAST*\n\n` +
       `Use the web panel for the best experience creating broadcasts with images, text, and custom buttons.\n\n` +
@@ -528,23 +422,7 @@ bot.on('callback_query', async (callbackQuery) => {
           ]
         }
       }
-    );*/
-
-    bot.sendMessage(chatId, "📡 Open your Broadcast Panel:", {
-      reply_markup: {
-        keyboard: [
-          [
-            { 
-              text: "🚀 Launch Broadcast Panel", 
-              web_app: { url: "https://hagere-online.com/telegram" } 
-            }
-          ]
-        ],
-        resize_keyboard: true,
-        one_time_keyboard: true
-      }
-    });
-
+    );
     return;
   }
 
@@ -613,26 +491,15 @@ bot.on('callback_query', async (callbackQuery) => {
   }
 
   if (data.startsWith('confirm_broadcast:')) {
-    console.log('Broadcast confirmation received from admin:', userId);
     if (!isAdmin(userId)) {
       await bot.sendMessage(chatId, "❌ Unauthorized.");
       return;
     }
 
     try {
-      // const encodedData = data.replace('confirm_broadcast:', '');
-      // const broadcastData = JSON.parse(Buffer.from(encodedData, 'base64').toString());
-
-      const broadcastId = data.split(":")[1];
-      const broadcasts = readBroadcasts();
-      const broadcastData = broadcasts[broadcastId];
-
-       if (!broadcastData) {
-        await bot.sendMessage(chatId, "❌ Broadcast data not found or expired.");
-        return;
-      }
-
-      console.log('Executing broadcast with data:', broadcastData);
+      const encodedData = data.replace('confirm_broadcast:', '');
+      const broadcastData = JSON.parse(Buffer.from(encodedData, 'base64').toString());
+      
       await bot.editMessageText(
         `📤 Broadcast confirmed! Sending now...`,
         {
@@ -640,7 +507,7 @@ bot.on('callback_query', async (callbackQuery) => {
           message_id: messageId
         }
       );
-    console.log('Starting broadcast execution...');
+
       await executeBroadcast(chatId, broadcastData);
     } catch (error) {
       console.error('Error executing broadcast:', error);

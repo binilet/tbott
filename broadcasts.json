@@ -1,0 +1,30 @@
+{
+  "de18ca67-0df7-4874-9079-4af5c1d4a8f5": {
+    "type": "broadcast",
+    "text": "Hagere-online",
+    "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNNtuUXrWj7XpYDw9tptl7UF9jQRvrhzNzoRdr5MnyEQ&s=10",
+    "hasImage": true,
+    "buttons": [
+      {
+        "text": "Play Now",
+        "webApp": "https://hagere-online.com"
+      }
+    ]
+  },
+  "3589bd60-a877-481c-b52c-ab851a4cfedc": {
+    "type": "broadcast",
+    "text": "ሃገሬ ጌምስ",
+    "image": "https://hagere-online.com/assets/logo.BKme7bJi.svg",
+    "hasImage": true,
+    "buttons": [
+      {
+        "text": "አሁን ይግቡ እና ይጫወቱ",
+        "url": "https://hagere-online.com"
+      },
+      {
+        "text": "ለበለጠ መረጃ",
+        "url": "https://t.me/HagereGamesOnline"
+      }
+    ]
+  }
+}
