@@ -1,4 +1,4 @@
-const TelegramBot = require('node-telegram-bot-api');
+const TelegramBot = require('node-telegram-bot-api');//new ver
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -27,50 +27,50 @@ app.use(express.json());
 
 //configure multer for image uploads
 const storage = multer.diskStorage({
-  destination: (req,file,cb)=>{
-    const uploadDir = path.join(__dirname,'uploads');
-    if(!fs.existsSync(uploadDir)){
-      fs.mkdirSync(uploadDir,{recursive:true});
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
-    cb(null,uploadDir);
+    cb(null, uploadDir);
   },
-  filename:(req,file,cb)=>{
+  filename: (req, file, cb) => {
     const uniqueName = crypto.randomBytes(16).toString("hex");
     const ext = path.extname(file.originalname);
-    cb(null,`${Date.now()}-${uniqueName}${ext}`);
+    cb(null, `${Date.now()}-${uniqueName}${ext}`);
   }
 });
 
-const fileFilter = (req,file,cb)=>{
+const fileFilter = (req, file, cb) => {
 
-  const allowedTypes = ['image/jpeg','image/png','image/gif','image/webp','image/svg+xml', 'image/svg'];
-  if(allowedTypes.includes(file.mimetype)){
-    cb(null,true);
-  }else{
-    cb(new Error("Invalid file type. Only images are allowed."),false);
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/svg'];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only images are allowed."), false);
   }
 }
 
 const upload = multer({
-  storage:storage,
-  fileFilter:fileFilter,
-  limits:{fileSize:5 * 1024 * 1024} //5MB limit
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } //5MB limit
 });
 
 //serve uploaded images statically
-app.use('/uploads',express.static(path.join(__dirname,'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-app.post('/api/upload',upload.single('image'),(req,res)=>{
+app.post('/api/upload', upload.single('image'), (req, res) => {
   try {
-    if(!req.file){
-      return res.status(400).json({error:"No file uploaded."});
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded." });
     }
     const domain = process.env.DOMAIN || 'http://localhost:3333';
-    const imageUrl = `${domain}/uploads/${req.file.filename}`;
+    const imageUrl = `${domain}/bot-uploads/${req.file.filename}`;
 
     console.log('Image uploaded successfully:', imageUrl);
 
-     res.json({
+    res.json({
       success: true,
       url: imageUrl,
       filename: req.file.filename,
@@ -80,17 +80,17 @@ app.post('/api/upload',upload.single('image'),(req,res)=>{
 
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({ 
-      error: 'Upload failed', 
-      message: error.message 
+    res.status(500).json({
+      error: 'Upload failed',
+      message: error.message
     });
   }
 });
 
 // ✨ NEW: Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'ok✨', 
+  res.json({
+    status: 'ok✨',
     bot: 'running',
     timestamp: new Date().toISOString()
   });
@@ -191,12 +191,12 @@ async function sendLogo(bot, chatId, userName) {
     if (fs.existsSync(LOCAL_LOGO_PNG)) {
       await bot.sendPhoto(chatId, LOCAL_LOGO_PNG, {
         caption: `🎯 *እንኳን ወደ ሃገሬ ጌምስ መጡ, ${userName}!*\n\n` +
-                 `🌟 *አጓጊ እና አስደሳች የቢንጎ ጨዋታዎች መገኛ*\n\n` +
-                 `በሽልማት ለመንበሽበሽ ተዘጋጅተዋል?`,
+          `🌟 *አጓጊ እና አስደሳች የቢንጎ ጨዋታዎች መገኛ*\n\n` +
+          `በሽልማት ለመንበሽበሽ ተዘጋጅተዋል?`,
         parse_mode: "Markdown"
       });
       return true;
-    } 
+    }
     return false;
   } catch (error) {
     console.error("Error sending logo:", error);
@@ -223,11 +223,11 @@ bot.onText(/\/admin/, async (msg) => {
           { text: "📰 Broadcast Message", callback_data: "open_broadcast" }
         ],
         [
-          { text: "📊 Stats", callback_data: "view_stats" }
+          { text: "📊 Stats", callback_data: "admin_stats" }
         ],
-        [
+        /*[
           { text: "❌ Close", callback_data: "close_menu" }
-        ]
+        ]*/
       ]
     }
   });
@@ -321,18 +321,18 @@ bot.on('web_app_data', async (msg) => {
 const executeBroadcast = async (adminChatId, broadcastData) => {
   const users = loadUsers();
   const userIds = Object.keys(users);
-  
+
   let successCount = 0;
   let failCount = 0;
 
   console.log(`Starting broadcast to ${userIds.length} users...`);
-  
+
   await bot.sendMessage(adminChatId, `📤 Starting broadcast to ${userIds.length} users...`);
 
   for (const userId of userIds) {
     try {
       const chatId = parseInt(userId);
-      
+
       // Prepare inline keyboard if buttons exist
       let replyMarkup = undefined;
       if (broadcastData.buttons && broadcastData.buttons.length > 0) {
@@ -356,7 +356,7 @@ const executeBroadcast = async (adminChatId, broadcastData) => {
         // Image with caption
         await bot.sendPhoto(chatId, broadcastData.image, {
           caption: broadcastData.text,
-          parse_mode: "Markdown",
+          parse_mode: "MarkdownV2",
           reply_markup: replyMarkup
         });
       } else if (broadcastData.image) {
@@ -367,18 +367,19 @@ const executeBroadcast = async (adminChatId, broadcastData) => {
       } else if (broadcastData.text) {
         // Text only
         await bot.sendMessage(chatId, broadcastData.text, {
-          parse_mode: "Markdown",
+          parse_mode: "MarkdownV2",
           reply_markup: replyMarkup
         });
       }
 
       successCount++;
-      
+
       // Add delay to avoid rate limiting (30 msgs/sec limit)
       await new Promise(resolve => setTimeout(resolve, 50));
-      
+
     } catch (error) {
       console.error(`Failed to send to user ${userId}:`, error.message);
+      console.log(error);
       failCount++;
     }
   }
@@ -406,6 +407,55 @@ bot.onText(/\/start/, async (msg) => {
     username: msg.from.username || null
   });
 
+  // 2. If not verified, force the "Verify Phone" button
+  await bot.sendMessage(
+    chatId,
+    `እንኳን ደህና መጡ ${userName}! መቀጠል እንዲችሉ እባክዎ ስልክ ቁጥርዎን ያረጋግጡ።`,
+    {
+      reply_markup: {
+        keyboard: [
+          [{ text: "📲 ያረጋግጡ!", request_contact: true }]
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    }
+  );
+
+  //return sendWelcomeMenu(chatId, userName);
+});
+
+bot.on('contact', async (msg) => {
+  const userId = msg.from.id;
+  const contact = msg.contact;
+
+  // Security: Check if the contact shared is actually theirs
+  if (contact.user_id !== userId) {
+    return bot.sendMessage(msg.chat.id, "እባክዎ የእርሶን ስልክ ቁጥር ያጋሩ።");
+  }
+
+  // 1. Save to your MERN DB (VPS X) via API call
+  try {
+    /*await axios.post('https://your-mern-api.com/internal/save-contact', {
+      chatId: userId,
+      phone: contact.phone_number,
+      secret: process.env.BRIDGE_SECRET // Protect this endpoint
+    });*/
+
+    // 2. Now that they are verified, show the Web App button
+    await bot.sendMessage(msg.chat.id, "✅ ተረጋግጧል! አሁን መጀመር ይችላሉ።", {
+      reply_markup: { remove_keyboard: true } // Hide the phone button
+    });
+    console.log('verified phone number is: ' + contact.phone_number)
+
+    sendWelcomeMenu(msg.chat.id, msg.from.first_name);
+
+  } catch (error) {
+    bot.sendMessage(msg.chat.id, "ይቅርታ፣ ችግር ተፈጥሯል:: እባክዎ ቆይተው ይሞክሩ::");
+  }
+});
+
+async function sendWelcomeMenu(chatId, userName) {
   await bot.sendMessage(
     chatId,
     "🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀",
@@ -417,14 +467,14 @@ bot.onText(/\/start/, async (msg) => {
       }
     }
   );
-});
+}
 
 bot.onText(/\/play/, async (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-  
+
   addUser(userId, { chatId: chatId });
-  
+
   try {
     await bot.sendMessage(
       chatId,
@@ -436,9 +486,9 @@ bot.onText(/\/play/, async (msg) => {
         reply_markup: {
           inline_keyboard: [
             [
-              { 
-                text: "🚀 ወደ ሃገሬ ጌምስ ሂድ", 
-                web_app: { url: WEBAPP_URL } 
+              {
+                text: "🚀 ወደ ሃገሬ ጌምስ ሂድ",
+                web_app: { url: WEBAPP_URL }
               }
             ],
             [
@@ -458,9 +508,9 @@ bot.onText(/\/play/, async (msg) => {
 bot.onText(/\/about/, (msg) => {
   const chatId = msg.chat.id;
   const userId = msg.from.id;
-  
+
   addUser(userId, { chatId: chatId });
-  
+
   const aboutMessage = `ℹ️ *ABOUT HAGERE BINGO*\n\n` +
     `🎯 **The Ultimate Online Bingo Experience**\n\n` +
     `🌟 **Features:**\n` +
@@ -534,9 +584,9 @@ bot.on('callback_query', async (callbackQuery) => {
       reply_markup: {
         keyboard: [
           [
-            { 
-              text: "🚀 Launch Broadcast Panel", 
-              web_app: { url: "https://hagere-online.com/telegram" } 
+            {
+              text: "🚀 Launch Broadcast Panel",
+              web_app: { url: "https://hagere-online.com/telegram" }
             }
           ]
         ],
@@ -597,14 +647,14 @@ bot.on('callback_query', async (callbackQuery) => {
         reply_markup: {
           inline_keyboard: [
             [
-              { text: "📢 Create Broadcast", callback_data: "admin_broadcast" }
+              { text: "📢 Create Broadcast", callback_data: "open_broadcast" }
             ],
             [
               { text: "📊 View Statistics", callback_data: "admin_stats" }
             ],
-            [
-              { text: "🌐 Open Web Panel", web_app: { url: ADMIN_PANEL_URL } }
-            ]
+            /* [
+               { text: "🌐 Open Web Panel", web_app: { url: ADMIN_PANEL_URL } }
+             ]*/
           ]
         }
       }
@@ -627,7 +677,7 @@ bot.on('callback_query', async (callbackQuery) => {
       const broadcasts = readBroadcasts();
       const broadcastData = broadcasts[broadcastId];
 
-       if (!broadcastData) {
+      if (!broadcastData) {
         await bot.sendMessage(chatId, "❌ Broadcast data not found or expired.");
         return;
       }
@@ -640,7 +690,7 @@ bot.on('callback_query', async (callbackQuery) => {
           message_id: messageId
         }
       );
-    console.log('Starting broadcast execution...');
+      console.log('Starting broadcast execution...');
       await executeBroadcast(chatId, broadcastData);
     } catch (error) {
       console.error('Error executing broadcast:', error);
@@ -655,7 +705,7 @@ bot.on('callback_query', async (callbackQuery) => {
   switch (data) {
     case 'start':
       const logoSent = await sendLogo(bot, chatId, userName);
-      
+
       if (!logoSent) {
         const logoMessage = `
     ╔══════════════════════════════════╗
@@ -680,9 +730,9 @@ bot.on('callback_query', async (callbackQuery) => {
           reply_markup: {
             inline_keyboard: [
               [
-                { 
-                  text: "🚀 ወደ ጨዋታ ይሂዱ", 
-                  web_app: { url: WEBAPP_URL } 
+                {
+                  text: "🚀 ወደ ጨዋታ ይሂዱ",
+                  web_app: { url: WEBAPP_URL }
                 }
               ],
               [
@@ -702,9 +752,9 @@ bot.on('callback_query', async (callbackQuery) => {
       const mainMenuKeyboard = {
         inline_keyboard: [
           [
-            { 
-              text: "🚀 ወደ ጨዋታ ይሂዱ", 
-              web_app: { url: WEBAPP_URL } 
+            {
+              text: "🚀 ወደ ጨዋታ ይሂዱ",
+              web_app: { url: WEBAPP_URL }
             }
           ],
           [
