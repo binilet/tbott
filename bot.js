@@ -414,7 +414,7 @@ bot.onText(/\/start/, async (msg) => {
     {
       reply_markup: {
         keyboard: [
-          [{ text: "📲 ያረጋግጡ!", request_contact: true }]
+          [{ text: "📲 ለማረጋጥ እዚህ ይጫኑ!", request_contact: true }]
         ],
         resize_keyboard: true,
         one_time_keyboard: true
@@ -426,24 +426,26 @@ bot.onText(/\/start/, async (msg) => {
 });
 
 bot.on('contact', async (msg) => {
-  const userId = msg.from.id;
-  const contact = msg.contact;
-
-  // Security: Check if the contact shared is actually theirs
-  if (contact.user_id !== userId) {
-    return bot.sendMessage(msg.chat.id, "እባክዎ የእርሶን ስልክ ቁጥር ያጋሩ።");
-  }
-
-  // 1. Save to your MERN DB (VPS X) via API call
   try {
-    /*await axios.post('https://your-mern-api.com/internal/save-contact', {
+    const userId = msg.from.id;
+    const contact = msg.contact;
+
+    // Security: Check if the contact shared is actually theirs
+    if (contact.user_id !== userId) {
+      return bot.sendMessage(msg.chat.id, "እባክዎ የእርሶን ስልክ ቁጥር ያጋሩ።");
+    }
+
+
+    // 1. Save to MongoDB
+    await save_to_remote_mongo_db({
       chatId: userId,
       phone: contact.phone_number,
-      secret: process.env.BRIDGE_SECRET // Protect this endpoint
-    });*/
+      firstName: msg.from.first_name,
+      username: msg.from.username
+    });
 
     // 2. Now that they are verified, show the Web App button
-    await bot.sendMessage(msg.chat.id, "✅ ተረጋግጧል! አሁን መጀመር ይችላሉ።", {
+    await bot.sendMessage(msg.chat.id, "✅ ስልክ ቁጥርዎ ተረጋግጧል! አሁን መጀመር ይችላሉ።", {
       reply_markup: { remove_keyboard: true } // Hide the phone button
     });
     console.log('verified phone number is: ' + contact.phone_number)
@@ -455,18 +457,69 @@ bot.on('contact', async (msg) => {
   }
 });
 
-async function sendWelcomeMenu(chatId, userName) {
-  await bot.sendMessage(
-    chatId,
-    "🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀",
-    {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: `👋 እንኳን ደህና መጡ ${userName}! ለመጀመር ይሄን ይጫኑ 🚀`, callback_data: "start" }]
-        ]
-      }
+
+const { MongoClient } = require('mongodb');
+let mongoClient = null;
+
+async function save_to_remote_mongo_db(data) {
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    console.error("MONGO_URI not set in environment variables.");
+    return;
+  }
+
+  try {
+    if (!mongoClient) {
+      mongoClient = new MongoClient(uri);
+      await mongoClient.connect();
+      console.log("Connected to MongoDB");
     }
-  );
+
+    const database = mongoClient.db(); // Uses the db defined in the URI
+    const collection = database.collection('telegramUsers');
+
+    // Upsert: Update if exists, Insert if new based on chatId (or phone if available)
+    // Assuming chatId is unique for a telegram user
+    const filter = { chatId: data.chatId };
+    const updateDoc = {
+      $set: {
+        ...data,
+        updatedAt: new Date()
+      },
+      $setOnInsert: {
+        createdAt: new Date()
+      }
+    };
+    const options = { upsert: true };
+
+    const result = await collection.updateOne(filter, updateDoc, options);
+    console.log(`User saved to MongoDB: ${result.upsertedId || result.modifiedCount}`);
+
+  } catch (error) {
+    console.error("Error saving to remote MongoDB:", error);
+    // bot.sendMessage(data.chatId, "ይቅርታ፣ ችግር ተፈጥሯል:: እባክዎ ቆይተው ይሞክሩ::"); // Optional: notify user on internal error?
+  }
+}
+
+async function sendWelcomeMenu(chatId, userName) {
+  const welcomeMsg = `
+🎉 *እንኳን ደህና መጡ ${userName}!*
+
+✅ ስልክ ቁጥርዎ በተሳካ ሁኔታ ተረጋግጧል።
+
+🎮 *ሃገሬ ቢንጎ* - የኢትዮጵያ ቁጥር አንድ የቢንጎ ጨዋታ!
+
+🚀 ለመጀመር ከታች ያለውን  ቁልፍ ይጫኑ።
+`;
+
+  await bot.sendMessage(chatId, welcomeMsg, {
+    parse_mode: "Markdown",
+    reply_markup: {
+      inline_keyboard: [
+        [{ text: "🎮 መጫወት ይጀምሩ", callback_data: "start" }]
+      ]
+    }
+  });
 }
 
 bot.onText(/\/play/, async (msg) => {
