@@ -395,7 +395,7 @@ const executeBroadcast = async (adminChatId, broadcastData) => {
   );
 };
 
-bot.onText(/\/start/, async (msg) => {
+/*bot.onText(/\/start/, async (msg) => {
   const chatId = msg.chat.id;
   const userName = msg.from.first_name || "Player";
   const userId = msg.from.id;
@@ -423,9 +423,9 @@ bot.onText(/\/start/, async (msg) => {
   );
 
   //return sendWelcomeMenu(chatId, userName);
-});
+});*/
 
-bot.on('contact', async (msg) => {
+/*bot.on('contact', async (msg) => {
   try {
     const userId = msg.from.id;
     const contact = msg.contact;
@@ -455,8 +455,95 @@ bot.on('contact', async (msg) => {
   } catch (error) {
     bot.sendMessage(msg.chat.id, "ይቅርታ፣ ችግር ተፈጥሯል:: እባክዎ ቆይተው ይሞክሩ::");
   }
+});*/
+
+
+bot.onText(/\/start(.*)/, async (msg, match) => {
+  const chatId = msg.chat.id;
+  const userName = msg.from.first_name || "Player";
+  const userId = msg.from.id;
+  const referralCode = match[1]?.trim(); // Capture referral code from deep link
+
+  // Track user
+  addUser(userId, {
+    chatId: chatId,
+    firstName: userName,
+    username: msg.from.username || null
+  });
+
+  // Store referral code temporarily if it exists
+  if (referralCode) {
+    await storeReferralCode(userId, referralCode);
+    console.log(`Referral code ${referralCode} stored for user ${userId}`);
+  }
+
+  // Force phone verification
+  await bot.sendMessage(
+    chatId,
+    `እንኳን ደህና መጡ ${userName}! መቀጠል እንዲችሉ እባክዎ ስልክ ቁጥርዎን ያረጋግጡ።`,
+    {
+      reply_markup: {
+        keyboard: [
+          [{ text: "📲 ለማረጋጥ እዚህ ይጫኑ!", request_contact: true }]
+        ],
+        resize_keyboard: true,
+        one_time_keyboard: true
+      }
+    }
+  );
 });
 
+bot.on('contact', async (msg) => {
+  try {
+    const userId = msg.from.id;
+    const contact = msg.contact;
+
+    // Security: Check if the contact shared is actually theirs
+    if (contact.user_id !== userId) {
+      return bot.sendMessage(msg.chat.id, "እባክዎ የእርሶን ስልክ ቁጥር ያጋሩ።");
+    }
+
+    // Get the stored referral code (if any)
+    const referralCode = await getReferralCode(userId);
+
+    // Save to MongoDB with referral code
+    await save_to_remote_mongo_db({
+      chatId: userId,
+      phone: contact.phone_number,
+      firstName: msg.from.first_name,
+      username: msg.from.username,
+      referralCode: referralCode || null // Store referral code
+    });
+
+    await bot.sendMessage(msg.chat.id, "✅ ስልክ ቁጥርዎ ተረጋግጧል! አሁን መጀመር ይችላሉ።", {
+      reply_markup: { remove_keyboard: true }
+    });
+
+    console.log('Verified phone number: ' + contact.phone_number);
+    if (referralCode) {
+      console.log('With referral code: ' + referralCode);
+    }
+
+    sendWelcomeMenu(msg.chat.id, msg.from.first_name);
+
+  } catch (error) {
+    console.error('Contact verification error:', error);
+    bot.sendMessage(msg.chat.id, "ይቅርታ፣ ችግር ተፈጥሯል:: እባክዎ ቆይተው ይሞክሩ::");
+  }
+});
+
+//helper functions: 
+const referralCodes = new Map();
+
+function storeReferralCode(userId, code) {
+  referralCodes.set(userId.toString(), code);
+  // Auto-delete after 1 hour
+  setTimeout(() => referralCodes.delete(userId.toString()), 3600000);
+}
+
+function getReferralCode(userId) {
+  return referralCodes.get(userId.toString()) || null;
+}
 
 const { MongoClient } = require('mongodb');
 let mongoClient = null;
